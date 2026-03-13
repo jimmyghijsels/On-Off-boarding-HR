@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/language";
 import { useEffect, useState } from "react";
 import { updateTask, startOffboarding, completeOnboarding } from "./actions";
+import { ProgressBar } from "@/components/progress-bar";
 
 interface Employee {
   id: number;
@@ -115,24 +116,27 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
 
         {employee.status === "onboarding" && (
           <div className="bg-white rounded-xl shadow-sm border border-[var(--neutral-200)] mb-6">
-            <div className="p-6 border-b border-[var(--neutral-200)] flex justify-between items-center">
-              <div>
+            <div className="p-6 border-b border-[var(--neutral-200)]">
+              <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold text-[var(--neutral-900)]">{t.onboardingTasks}</h2>
-                <p className="text-sm text-[var(--neutral-600)]">
-                  {onboardingCompleted} {t.completed} {onboarding.length}
-                </p>
+                {onboardingCompleted === onboarding.length && onboarding.length > 0 && (
+                  <form action={completeOnboarding}>
+                    <input type="hidden" name="employeeId" value={employeeId} />
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-[var(--success-600)] text-white rounded-lg hover:bg-[var(--success-700)] transition-colors font-medium shadow-sm"
+                    >
+                      {t.completeOnboarding}
+                    </button>
+                  </form>
+                )}
               </div>
-              {onboardingCompleted === onboarding.length && onboarding.length > 0 && (
-                <form action={completeOnboarding}>
-                  <input type="hidden" name="employeeId" value={employeeId} />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-[var(--success-600)] text-white rounded-lg hover:bg-[var(--success-700)] transition-colors font-medium"
-                  >
-                    {t.completeOnboarding}
-                  </button>
-                </form>
-              )}
+              <ProgressBar
+                value={onboardingCompleted}
+                max={onboarding.length}
+                label={`${onboardingCompleted} van ${onboarding.length} taken voltooid`}
+                className="mb-4"
+              />
             </div>
             <div className="p-6">
               {onboarding.length === 0 ? (
@@ -140,20 +144,27 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
               ) : (
                 <ul className="space-y-3">
                   {onboarding.map((task) => (
-                    <li key={task.id} className="flex items-center gap-3">
-                      <form action={updateTask}>
+                    <li key={task.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--neutral-50)] transition-colors">
+                      <form action={updateTask} className="flex-shrink-0 mt-0.5">
                         <input type="hidden" name="taskId" value={task.id} />
                         <input type="hidden" name="taskType" value="onboarding" />
                         <input
                           type="checkbox"
                           checked={task.completed}
                           onChange={(e) => e.target.form?.requestSubmit()}
-                          className="w-5 h-5 rounded border-[var(--neutral-300)] text-[var(--primary-600)] focus:ring-[var(--primary-500)]"
+                          className="w-5 h-5 rounded border-[var(--neutral-300)] text-[var(--primary-600)] focus:ring-[var(--primary-500)] cursor-pointer"
                         />
                       </form>
-                      <span className={task.completed ? "text-[var(--neutral-400)] line-through" : "text-[var(--neutral-700)]"}>
-                        {task.taskName}
-                      </span>
+                      <div className="flex-1">
+                        <span className={`block ${task.completed ? "text-[var(--neutral-400)] line-through" : "text-[var(--neutral-700)]"}`}>
+                          {task.taskName}
+                        </span>
+                        {task.completed && task.completedAt && (
+                          <span className="text-xs text-[var(--neutral-500)] mt-1 block">
+                            Voltooid op {new Date(task.completedAt).toLocaleDateString(language === 'nl' ? 'nl-NL' : 'en-US')}
+                          </span>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -184,9 +195,12 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
           <div className="bg-white rounded-xl shadow-sm border border-[var(--neutral-200)] mb-6">
             <div className="p-6 border-b border-[var(--neutral-200)]">
               <h2 className="text-lg font-semibold text-[var(--neutral-900)]">{t.offboardingTasks}</h2>
-              <p className="text-sm text-[var(--neutral-600)]">
-                {offboardingCompleted} {t.completed} {offboarding.length}
-              </p>
+              <ProgressBar
+                value={offboardingCompleted}
+                max={offboarding.length}
+                label={`${offboardingCompleted} van ${offboarding.length} taken voltooid`}
+                className="mt-2"
+              />
             </div>
             <div className="p-6">
               {offboarding.length === 0 ? (
@@ -194,20 +208,27 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
               ) : (
                 <ul className="space-y-3">
                   {offboarding.map((task) => (
-                    <li key={task.id} className="flex items-center gap-3">
-                      <form action={updateTask}>
+                    <li key={task.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--neutral-50)] transition-colors">
+                      <form action={updateTask} className="flex-shrink-0 mt-0.5">
                         <input type="hidden" name="taskId" value={task.id} />
                         <input type="hidden" name="taskType" value="offboarding" />
                         <input
                           type="checkbox"
                           checked={task.completed}
                           onChange={(e) => e.target.form?.requestSubmit()}
-                          className="w-5 h-5 rounded border-[var(--neutral-300)] text-[var(--warning-600)] focus:ring-[var(--warning-500)]"
+                          className="w-5 h-5 rounded border-[var(--neutral-300)] text-[var(--warning-600)] focus:ring-[var(--warning-500)] cursor-pointer"
                         />
                       </form>
-                      <span className={task.completed ? "text-[var(--neutral-400)] line-through" : "text-[var(--neutral-700)]"}>
-                        {task.taskName}
-                      </span>
+                      <div className="flex-1">
+                        <span className={`block ${task.completed ? "text-[var(--neutral-400)] line-through" : "text-[var(--neutral-700)]"}`}>
+                          {task.taskName}
+                        </span>
+                        {task.completed && task.completedAt && (
+                          <span className="text-xs text-[var(--neutral-500)] mt-1 block">
+                            Voltooid op {new Date(task.completedAt).toLocaleDateString(language === 'nl' ? 'nl-NL' : 'en-US')}
+                          </span>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
