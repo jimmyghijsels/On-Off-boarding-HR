@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ExportButton } from "@/components/export-button";
 import { DarkModeToggle } from "@/components/dark-mode-toggle";
+import { Sidebar } from "@/components/sidebar";
 import { useLanguage } from "@/lib/language";
 import { useState, useMemo } from "react";
 import { Employee } from "@/types/employee";
@@ -15,6 +16,7 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const filteredEmployees = useMemo(() => {
     return allEmployees.filter((employee) => {
@@ -42,37 +44,53 @@ export default function HomePage() {
   }, [allEmployees]);
 
   return (
-    <div className="min-h-screen bg-[var(--neutral-50)]">
-      <header className="bg-white border-b border-[var(--neutral-200)] shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-[var(--primary-600)] rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.496-.769a1 1 0 011.228.113l.502.289a1 1 0 01.228 1.397l-.769 1.496L17.323 10H19a1 1 0 110 2h-1.323l-1.582 3.954.769 1.496a1 1 0 01-.113 1.228l-.289.502a1 1 0 01-1.397.228l-1.496-.769L11 17.323V19a1 1 0 11-2 0v-1.323l-3.954-1.582-1.496.769a1 1 0 01-1.228-.113l-.502-.289a1 1 0 011.397-.228l.769-1.496L2.677 10H1a1 1 0 110-2h1.323l1.582-3.954-.769-1.496a1 1 0 01.113-1.228l.289-.502a1 1 0 011.397-.228l1.496.769L9 2.677V1a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
+    <>
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <div className="flex-1 min-h-screen bg-[var(--neutral-50)] dark:bg-[var(--neutral-900)]">
+        <header className="bg-white dark:bg-[var(--neutral-800)] border-b border-[var(--neutral-200)] dark:border-[var(--neutral-700)] shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-[var(--primary-600)] rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.496-.769a1 1 0 011.228.113l.502.289a1 1 0 01.228 1.397l-.769 1.496L17.323 10H19a1 1 0 110 2h-1.323l-1.582 3.954.769 1.496a1 1 0 01-.113 1.228l-.289.502a1 1 0 01-1.397.228l-1.496-.769L11 17.323V19a1 1 0 11-2 0v-1.323l-3.954-1.582-1.496.769a1 1 0 01-1.228-.113l-.502-.289a1 1 0 011.397-.228l.769-1.496L2.677 10H1a1 1 0 110-2h1.323l1.582-3.954-.769-1.496a1 1 0 01.113-1.228l.289-.502a1 1 0 011.397-.228l1.496.769L9 2.677V1a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-[var(--neutral-900)] dark:text-[var(--neutral-100)]">{t.appTitle}</h1>
+                  <p className="text-sm text-[var(--neutral-500)] dark:text-[var(--neutral-400)]">{t.appSubtitle}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-[var(--neutral-900)]">{t.appTitle}</h1>
-                <p className="text-sm text-[var(--neutral-500)]">{t.appSubtitle}</p>
+              <div className="flex items-center space-x-4">
+                <DarkModeToggle />
+                <LanguageSwitcher />
+
+                {/* Menu Button */}
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="p-2 rounded-lg bg-[var(--neutral-100)] dark:bg-[var(--neutral-800)] text-[var(--neutral-700)] dark:text-[var(--neutral-300)] hover:bg-[var(--neutral-200)] dark:hover:bg-[var(--neutral-700)] transition-colors"
+                  aria-label="Menu openen"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+
+                <Link
+                  href="/employees/new"
+                  className="inline-flex items-center px-4 py-2 bg-[var(--primary-600)] text-white rounded-lg hover:bg-[var(--primary-700)] transition-colors font-medium shadow-sm"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  {t.newEmployee}
+                </Link>
               </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <DarkModeToggle />
-              <LanguageSwitcher />
-              <Link
-                href="/employees/new"
-                className="inline-flex items-center px-4 py-2 bg-[var(--primary-600)] text-white rounded-lg hover:bg-[var(--primary-700)] transition-colors font-medium shadow-sm"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                {t.newEmployee}
-              </Link>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -332,5 +350,6 @@ export default function HomePage() {
         </div>
       </main>
     </div>
+    </>
   );
 }

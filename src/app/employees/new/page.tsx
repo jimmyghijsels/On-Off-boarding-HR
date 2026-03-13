@@ -69,8 +69,8 @@ export default function NewEmployeePage() {
     createEmployee(formData, language, router);
   };
   return (
-    <div className="min-h-screen bg-[var(--neutral-50)]">
-      <header className="bg-white border-b border-[var(--neutral-200)] shadow-sm">
+    <div className="flex-1 min-h-screen bg-[var(--neutral-50)] dark:bg-[var(--neutral-900)]">
+      <header className="bg-white dark:bg-[var(--neutral-800)] border-b border-[var(--neutral-200)] dark:border-[var(--neutral-700)] shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <Link href="/" className="text-[var(--primary-600)] hover:text-[var(--primary-700)] transition-colors">
             ← {t.backToOverview}

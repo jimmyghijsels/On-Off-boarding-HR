@@ -24,7 +24,11 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <DarkModeProvider>
           <LanguageProvider>
-            {children}
+            <div className="min-h-screen bg-[var(--neutral-50)] dark:bg-[var(--neutral-900)]">
+              <div className="flex">
+                {children}
+              </div>
+            </div>
           </LanguageProvider>
         </DarkModeProvider>
       </body>

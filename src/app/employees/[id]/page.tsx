@@ -58,8 +58,8 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
   const offboardingCompleted = offboarding.filter((t) => t.completed).length;
 
   return (
-    <div className="min-h-screen bg-[var(--neutral-50)]">
-      <header className="bg-white border-b border-[var(--neutral-200)] shadow-sm">
+    <div className="flex-1 min-h-screen bg-[var(--neutral-50)] dark:bg-[var(--neutral-900)]">
+      <header className="bg-white dark:bg-[var(--neutral-800)] border-b border-[var(--neutral-200)] dark:border-[var(--neutral-700)] shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <Link href="/" className="text-[var(--primary-600)] hover:text-[var(--primary-700)] transition-colors">
             ← {t.backToOverview}
@@ -115,22 +115,84 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
         </div>
 
         {employee.status === "onboarding" && (
-          <div className="bg-white rounded-xl shadow-sm border border-[var(--neutral-200)] mb-6">
-            <div className="p-6 border-b border-[var(--neutral-200)]">
+          <div className="bg-white dark:bg-[var(--neutral-800)] rounded-xl shadow-sm border border-[var(--neutral-200)] dark:border-[var(--neutral-700)] mb-6">
+            <div className="p-6 border-b border-[var(--neutral-200)] dark:border-[var(--neutral-700)]">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-[var(--neutral-900)]">{t.onboardingTasks}</h2>
-                {onboardingCompleted === onboarding.length && onboarding.length > 0 && (
-                  <form action={completeOnboarding}>
-                    <input type="hidden" name="employeeId" value={employeeId} />
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-[var(--success-600)] text-white rounded-lg hover:bg-[var(--success-700)] transition-colors font-medium shadow-sm"
-                    >
-                      {t.completeOnboarding}
-                    </button>
-                  </form>
-                )}
+                <h2 className="text-lg font-semibold text-[var(--neutral-900)] dark:text-[var(--neutral-100)]">{t.onboardingTasks}</h2>
+                <div className="flex gap-2">
+                  <button className="px-3 py-1 text-sm text-[var(--primary-600)] hover:text-[var(--primary-700)] font-medium">
+                    + Taak toevoegen
+                  </button>
+                  {onboardingCompleted === onboarding.length && onboarding.length > 0 && (
+                    <form action={completeOnboarding}>
+                      <input type="hidden" name="employeeId" value={employeeId} />
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-[var(--success-600)] text-white rounded-lg hover:bg-[var(--success-700)] transition-colors font-medium"
+                      >
+                        {t.completeOnboarding}
+                      </button>
+                    </form>
+                  )}
+                </div>
               </div>
+              <ProgressBar
+                value={onboardingCompleted}
+                max={onboarding.length}
+                label={`${onboardingCompleted} van ${onboarding.length} taken voltooid`}
+                className="mb-4"
+              />
+            </div>
+            <div className="p-6">
+              {onboarding.length === 0 ? (
+                <p className="text-[var(--neutral-500)] dark:text-[var(--neutral-400)]">{t.noTasks}</p>
+              ) : (
+                <ul className="space-y-3">
+                  {onboarding.map((task) => (
+                    <li key={task.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--neutral-50)] dark:hover:bg-[var(--neutral-700)] transition-colors">
+                      <form action={updateTask} className="flex-shrink-0 mt-0.5">
+                        <input type="hidden" name="taskId" value={task.id} />
+                        <input type="hidden" name="taskType" value="onboarding" />
+                        <input
+                          type="checkbox"
+                          checked={task.completed}
+                          onChange={(e) => e.target.form?.requestSubmit()}
+                          className="w-5 h-5 rounded border-[var(--neutral-300)] dark:border-[var(--neutral-600)] text-[var(--primary-600)] focus:ring-[var(--primary-500)] cursor-pointer"
+                        />
+                      </form>
+                      <div className="flex-1">
+                        <span className={`block ${task.completed ? "text-[var(--neutral-400)] line-through" : "text-[var(--neutral-700)] dark:text-[var(--neutral-300)]"}`}>
+                          {task.taskName}
+                        </span>
+                        {task.completed && task.completedAt && (
+                          <span className="text-xs text-[var(--neutral-500)] dark:text-[var(--neutral-400)] mt-1 block">
+                            Voltooid op {new Date(task.completedAt).toLocaleDateString(language === 'nl' ? 'nl-NL' : 'en-US')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <button className="p-1 text-[var(--neutral-400)] hover:text-[var(--neutral-600)] dark:hover:text-[var(--neutral-300)] transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button className="p-1 text-[var(--neutral-400)] hover:text-[var(--error-500)] transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
+        {employee.status === "onboarding" && (
+          <div className="bg-white dark:bg-[var(--neutral-800)] rounded-xl shadow-sm border border-[var(--neutral-200)] dark:border-[var(--neutral-700)] mb-6">
+            <div className="p-6 border-b border-[var(--neutral-200)] dark:border-[var(--neutral-700)]">
               <ProgressBar
                 value={onboardingCompleted}
                 max={onboarding.length}
@@ -163,7 +225,7 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
                           <span className="text-xs text-[var(--neutral-500)] mt-1 block">
                             Voltooid op {new Date(task.completedAt).toLocaleDateString(language === 'nl' ? 'nl-NL' : 'en-US')}
                           </span>
-                        )}
+        )}
                       </div>
                     </li>
                   ))}
@@ -192,42 +254,58 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
         )}
 
         {employee.status === "offboarding" && (
-          <div className="bg-white rounded-xl shadow-sm border border-[var(--neutral-200)] mb-6">
-            <div className="p-6 border-b border-[var(--neutral-200)]">
-              <h2 className="text-lg font-semibold text-[var(--neutral-900)]">{t.offboardingTasks}</h2>
+          <div className="bg-white dark:bg-[var(--neutral-800)] rounded-xl shadow-sm border border-[var(--neutral-200)] dark:border-[var(--neutral-700)] mb-6">
+            <div className="p-6 border-b border-[var(--neutral-200)] dark:border-[var(--neutral-700)]">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-[var(--neutral-900)] dark:text-[var(--neutral-100)]">{t.offboardingTasks}</h2>
+                <button className="px-3 py-1 text-sm text-[var(--primary-600)] hover:text-[var(--primary-700)] font-medium">
+                  + Taak toevoegen
+                </button>
+              </div>
               <ProgressBar
                 value={offboardingCompleted}
                 max={offboarding.length}
                 label={`${offboardingCompleted} van ${offboarding.length} taken voltooid`}
-                className="mt-2"
               />
             </div>
             <div className="p-6">
               {offboarding.length === 0 ? (
-                <p className="text-[var(--neutral-500)]">{t.noTasks}</p>
+                <p className="text-[var(--neutral-500)] dark:text-[var(--neutral-400)]">{t.noTasks}</p>
               ) : (
                 <ul className="space-y-3">
                   {offboarding.map((task) => (
-                    <li key={task.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--neutral-50)] transition-colors">
-                      <form action={updateTask} className="flex-shrink-0 mt-0.5">
+                    <li key={task.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--neutral-50)] dark:hover:bg-[var(--neutral-700)] transition-colors">
+                      <form action={updateTask}>
                         <input type="hidden" name="taskId" value={task.id} />
                         <input type="hidden" name="taskType" value="offboarding" />
                         <input
                           type="checkbox"
                           checked={task.completed}
                           onChange={(e) => e.target.form?.requestSubmit()}
-                          className="w-5 h-5 rounded border-[var(--neutral-300)] text-[var(--warning-600)] focus:ring-[var(--warning-500)] cursor-pointer"
+                          className="w-5 h-5 rounded border-[var(--neutral-300)] dark:border-[var(--neutral-600)] text-[var(--warning-600)] focus:ring-[var(--warning-500)] cursor-pointer"
                         />
                       </form>
                       <div className="flex-1">
-                        <span className={`block ${task.completed ? "text-[var(--neutral-400)] line-through" : "text-[var(--neutral-700)]"}`}>
+                        <span className={`block ${task.completed ? "text-[var(--neutral-400)] line-through" : "text-[var(--neutral-700)] dark:text-[var(--neutral-300)]"}`}>
                           {task.taskName}
                         </span>
                         {task.completed && task.completedAt && (
-                          <span className="text-xs text-[var(--neutral-500)] mt-1 block">
+                          <span className="text-xs text-[var(--neutral-500)] dark:text-[var(--neutral-400)] mt-1 block">
                             Voltooid op {new Date(task.completedAt).toLocaleDateString(language === 'nl' ? 'nl-NL' : 'en-US')}
                           </span>
                         )}
+                      </div>
+                      <div className="flex gap-1">
+                        <button className="p-1 text-[var(--neutral-400)] hover:text-[var(--neutral-600)] dark:hover:text-[var(--neutral-300)] transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button className="p-1 text-[var(--neutral-400)] hover:text-[var(--error-500)] transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
                       </div>
                     </li>
                   ))}
@@ -236,6 +314,7 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
         )}
+
       </main>
     </div>
   );
