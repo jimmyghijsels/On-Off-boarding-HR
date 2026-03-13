@@ -1,7 +1,2 @@
-import { runMigrations } from "@kilocode/app-builder-db";
-import { createDatabase } from "@kilocode/app-builder-db";
-import * as schema from "./schema";
-
-const db = createDatabase(schema);
-
-runMigrations(db, {}, { migrationsFolder: "./src/db/migrations" }).catch(console.error);
+// Mock migration - no-op since we're using in-memory mock database
+console.log("Mock database - no migration needed");

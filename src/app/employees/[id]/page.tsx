@@ -1,6 +1,4 @@
-import { getDb } from "@/db";
-import { employees, onboardingTasks, offboardingTasks } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { db } from "@/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { updateTask, startOffboarding, completeOnboarding } from "./actions";
@@ -8,20 +6,15 @@ import { updateTask, startOffboarding, completeOnboarding } from "./actions";
 export const dynamic = "force-dynamic";
 
 async function getEmployee(id: number) {
-  const db = getDb();
-  const employee = await db.select().from(employees).where(eq(employees.id, id)).limit(1);
-  if (employee.length === 0) return null;
-  return employee[0];
+  return db.getEmployee(id) || null;
 }
 
 async function getOnboardingTasks(employeeId: number) {
-  const db = getDb();
-  return await db.select().from(onboardingTasks).where(eq(onboardingTasks.employeeId, employeeId));
+  return db.getOnboardingTasks(employeeId);
 }
 
 async function getOffboardingTasks(employeeId: number) {
-  const db = getDb();
-  return await db.select().from(offboardingTasks).where(eq(offboardingTasks.employeeId, employeeId));
+  return db.getOffboardingTasks(employeeId);
 }
 
 export default async function EmployeeDetailPage({ params }: { params: Promise<{ id: string }> }) {

@@ -1,36 +1,31 @@
 "use server";
 
-import { getDb } from "@/db";
-import { employees, onboardingTasks, offboardingTasks } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { db } from "@/db";
 import { revalidatePath } from "next/cache";
 
 export async function updateTask(formData: FormData) {
-  const db = getDb();
   const taskId = parseInt(formData.get("taskId") as string);
   const taskType = formData.get("taskType") as string;
-  
-  const table = taskType === "onboarding" ? onboardingTasks : offboardingTasks;
-  const task = await db.select().from(table).where(eq(table.id, taskId)).limit(1);
-  
-  if (task.length === 0) return;
-  
-  const completed = !task[0].completed;
-  
-  await db.update(table)
-    .set({ 
-      completed,
-      completedAt: completed ? new Date() : null
-    })
-    .where(eq(table.id, taskId));
-  
-  revalidatePath(`/employees/${task[0].employeeId}`);
+
+  // Find the task to get employee ID
+  const allTasks = taskType === "onboarding" ? db.getOnboardingTasks(0) : db.getOffboardingTasks(0);
+  const task = allTasks.find(t => t.id === taskId);
+
+  if (!task) return;
+
+  const completed = !task.completed;
+
+  db.updateTask(taskId, taskType as 'onboarding' | 'offboarding', {
+    completed,
+    completedAt: completed ? new Date() : undefined
+  });
+
+  revalidatePath(`/employees/${task.employeeId}`);
 }
 
 export async function startOffboarding(formData: FormData) {
-  const db = getDb();
   const employeeId = parseInt(formData.get("employeeId") as string);
-  
+
   const DEFAULT_OFFBOARDING_TASKS = [
     "Exit gesprek plannen",
     "Bedrijfseigendom innemen",
@@ -43,28 +38,24 @@ export async function startOffboarding(formData: FormData) {
     "Kennisoverdracht organiseren",
     "Netwerk toegang blokkeren",
   ];
-  
-  await db.update(employees)
-    .set({ status: "offboarding" })
-    .where(eq(employees.id, employeeId));
-  
+
+  db.updateEmployee(employeeId, { status: "offboarding" });
+
   for (const task of DEFAULT_OFFBOARDING_TASKS) {
-    await db.insert(offboardingTasks).values({
+    db.addOffboardingTask({
       employeeId,
       taskName: task,
+      completed: false,
     });
   }
-  
+
   revalidatePath("/");
 }
 
 export async function completeOnboarding(formData: FormData) {
-  const db = getDb();
   const employeeId = parseInt(formData.get("employeeId") as string);
-  
-  await db.update(employees)
-    .set({ status: "active" })
-    .where(eq(employees.id, employeeId));
-  
+
+  db.updateEmployee(employeeId, { status: "active" });
+
   revalidatePath(`/employees/${employeeId}`);
 }

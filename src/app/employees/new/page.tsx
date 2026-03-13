@@ -1,6 +1,4 @@
-import { getDb } from "@/db";
-import { employees, onboardingTasks } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { db } from "@/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -21,29 +19,27 @@ const DEFAULT_ONBOARDING_TASKS = [
 
 async function createEmployee(formData: FormData) {
   "use server";
-  
-  const db = getDb();
+
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const department = formData.get("department") as string;
   const position = formData.get("position") as string;
   const startDate = new Date(formData.get("startDate") as string);
 
-  const result = await db.insert(employees).values({
+  const employeeId = db.addEmployee({
     name,
     email,
     department,
     position,
     startDate,
     status: "onboarding",
-  }).returning({ id: employees.id });
-
-  const employeeId = result[0].id;
+  });
 
   for (const task of DEFAULT_ONBOARDING_TASKS) {
-    await db.insert(onboardingTasks).values({
+    db.addOnboardingTask({
       employeeId,
       taskName: task,
+      completed: false,
     });
   }
 
