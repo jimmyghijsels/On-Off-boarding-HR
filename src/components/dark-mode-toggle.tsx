@@ -1,5 +1,7 @@
 'use client';
 
+'use client';
+
 import { useDarkMode } from '@/lib/dark-mode';
 
 export function DarkModeToggle() {

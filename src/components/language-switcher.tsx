@@ -1,5 +1,7 @@
 'use client';
 
+'use client';
+
 import { useLanguage } from '@/lib/language';
 
 export function LanguageSwitcher() {
