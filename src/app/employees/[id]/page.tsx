@@ -1,84 +1,125 @@
+'use client';
+
 import { db } from "@/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language";
+import { useEffect, useState } from "react";
 import { updateTask, startOffboarding, completeOnboarding } from "./actions";
 
-export const dynamic = "force-dynamic";
-
-async function getEmployee(id: number) {
-  return db.getEmployee(id) || null;
+interface Employee {
+  id: number;
+  name: string;
+  email: string;
+  department: string;
+  position: string;
+  startDate: Date;
+  endDate?: Date;
+  status: string;
+  createdAt: Date;
 }
 
-async function getOnboardingTasks(employeeId: number) {
-  return db.getOnboardingTasks(employeeId);
+interface Task {
+  id: number;
+  employeeId: number;
+  taskName: string;
+  completed: boolean;
+  completedAt?: Date;
 }
 
-async function getOffboardingTasks(employeeId: number) {
-  return db.getOffboardingTasks(employeeId);
-}
+export default function EmployeeDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { t, language } = useLanguage();
+  const [employee, setEmployee] = useState<Employee | null>(null);
+  const [onboarding, setOnboarding] = useState<Task[]>([]);
+  const [offboarding, setOffboarding] = useState<Task[]>([]);
+  const [employeeId, setEmployeeId] = useState<number | null>(null);
 
-export default async function EmployeeDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const employeeId = parseInt(id);
-  
-  const employee = await getEmployee(employeeId);
-  if (!employee) notFound();
+  useEffect(() => {
+    const fetchData = async () => {
+      const { id } = await params;
+      const idNum = parseInt(id);
+      setEmployeeId(idNum);
 
-  const onboarding = await getOnboardingTasks(employeeId);
-  const offboarding = await getOffboardingTasks(employeeId);
+      const emp = db.getEmployee(idNum);
+      if (!emp) notFound();
+      setEmployee(emp);
+
+      setOnboarding(db.getOnboardingTasks(idNum));
+      setOffboarding(db.getOffboardingTasks(idNum));
+    };
+
+    fetchData();
+  }, [params]);
+
+  if (!employee || employeeId === null) return <div>Loading...</div>;
 
   const onboardingCompleted = onboarding.filter((t) => t.completed).length;
   const offboardingCompleted = offboarding.filter((t) => t.completed).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-[var(--neutral-50)]">
+      <header className="bg-white border-b border-[var(--neutral-200)] shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
-            ← Terug naar overzicht
+          <Link href="/" className="text-[var(--primary-600)] hover:text-[var(--primary-700)] transition-colors">
+            ← {t.backToOverview}
           </Link>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="p-6 border-b">
+        <div className="bg-white rounded-xl shadow-sm border border-[var(--neutral-200)] mb-6">
+          <div className="p-6 border-b border-[var(--neutral-200)]">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">{employee.name}</h1>
-                <p className="text-gray-600">{employee.email}</p>
-                <div className="mt-2 flex gap-4 text-sm text-gray-600">
-                  <span>📁 {employee.department}</span>
-                  <span>💼 {employee.position}</span>
-                  <span>📅 Start: {employee.startDate ? new Date(employee.startDate).toLocaleDateString("nl-NL") : "-"}</span>
+                <h1 className="text-2xl font-semibold text-[var(--neutral-900)]">{employee.name}</h1>
+                <p className="text-[var(--neutral-600)]">{employee.email}</p>
+                <div className="mt-3 flex gap-6 text-sm text-[var(--neutral-600)]">
+                  <div className="flex items-center">
+                    <svg className="w-4 h-4 mr-1 text-[var(--neutral-400)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    {employee.department}
+                  </div>
+                  <div className="flex items-center">
+                    <svg className="w-4 h-4 mr-1 text-[var(--neutral-400)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V8a2 2 0 01-2 2H8a2 2 0 01-2-2V6m8 0H8" />
+                    </svg>
+                    {employee.position}
+                  </div>
+                  <div className="flex items-center">
+                    <svg className="w-4 h-4 mr-1 text-[var(--neutral-400)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {t.startDate}: {employee.startDate ? new Date(employee.startDate).toLocaleDateString(language === 'nl' ? 'nl-NL' : 'en-US') : "-"}
+                  </div>
                 </div>
               </div>
               <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
                   employee.status === "active"
-                    ? "bg-green-100 text-green-800"
+                    ? "bg-[var(--success-100)] text-[var(--success-700)]"
                     : employee.status === "onboarding"
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-orange-100 text-orange-800"
+                    ? "bg-[var(--primary-100)] text-[var(--primary-700)]"
+                    : "bg-[var(--warning-100)] text-[var(--warning-700)]"
                 }`}
               >
                 {employee.status === "active"
-                  ? "Actief"
+                  ? t.active
                   : employee.status === "onboarding"
-                  ? "Onboarding"
-                  : "Offboarding"}
+                  ? t.onboarding
+                  : t.offboarding}
               </span>
             </div>
           </div>
         </div>
 
         {employee.status === "onboarding" && (
-          <div className="bg-white rounded-lg shadow mb-6">
-            <div className="p-4 border-b flex justify-between items-center">
+          <div className="bg-white rounded-xl shadow-sm border border-[var(--neutral-200)] mb-6">
+            <div className="p-6 border-b border-[var(--neutral-200)] flex justify-between items-center">
               <div>
-                <h2 className="text-lg font-semibold">Onboarding taken</h2>
-                <p className="text-sm text-gray-600">
-                  {onboardingCompleted} van {onboarding.length} voltooid
+                <h2 className="text-lg font-semibold text-[var(--neutral-900)]">{t.onboardingTasks}</h2>
+                <p className="text-sm text-[var(--neutral-600)]">
+                  {onboardingCompleted} {t.completed} {onboarding.length}
                 </p>
               </div>
               {onboardingCompleted === onboarding.length && onboarding.length > 0 && (
@@ -86,16 +127,16 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
                   <input type="hidden" name="employeeId" value={employeeId} />
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    className="px-4 py-2 bg-[var(--success-600)] text-white rounded-lg hover:bg-[var(--success-700)] transition-colors font-medium"
                   >
-                    Onboarding voltooien
+                    {t.completeOnboarding}
                   </button>
                 </form>
               )}
             </div>
-            <div className="p-4">
+            <div className="p-6">
               {onboarding.length === 0 ? (
-                <p className="text-gray-500">Geen onboarding taken.</p>
+                <p className="text-[var(--neutral-500)]">{t.noTasks}</p>
               ) : (
                 <ul className="space-y-3">
                   {onboarding.map((task) => (
@@ -107,10 +148,10 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
                           type="checkbox"
                           checked={task.completed}
                           onChange={(e) => e.target.form?.requestSubmit()}
-                          className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="w-5 h-5 rounded border-[var(--neutral-300)] text-[var(--primary-600)] focus:ring-[var(--primary-500)]"
                         />
                       </form>
-                      <span className={task.completed ? "text-gray-400 line-through" : "text-gray-700"}>
+                      <span className={task.completed ? "text-[var(--neutral-400)] line-through" : "text-[var(--neutral-700)]"}>
                         {task.taskName}
                       </span>
                     </li>
@@ -122,34 +163,34 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
         )}
 
         {employee.status === "active" && (
-          <div className="bg-white rounded-lg shadow mb-6 p-6">
-            <h2 className="text-lg font-semibold mb-4">Werknemer offboarden</h2>
-            <p className="text-gray-600 mb-4">
-              Start het offboarding proces om alle benodigde taken te doorlopen wanneer een werknemer uit dienst gaat.
+          <div className="bg-white rounded-xl shadow-sm border border-[var(--neutral-200)] mb-6 p-6">
+            <h2 className="text-lg font-semibold text-[var(--neutral-900)] mb-4">{t.offboardEmployee}</h2>
+            <p className="text-[var(--neutral-600)] mb-6">
+              {t.offboardDesc}
             </p>
             <form action={startOffboarding}>
               <input type="hidden" name="employeeId" value={employeeId} />
               <button
                 type="submit"
-                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+                className="px-4 py-2 bg-[var(--warning-600)] text-white rounded-lg hover:bg-[var(--warning-700)] transition-colors font-medium"
               >
-                Start offboarding
+                {t.startOffboarding}
               </button>
             </form>
           </div>
         )}
 
         {employee.status === "offboarding" && (
-          <div className="bg-white rounded-lg shadow mb-6">
-            <div className="p-4 border-b">
-              <h2 className="text-lg font-semibold">Offboarding taken</h2>
-              <p className="text-sm text-gray-600">
-                {offboardingCompleted} van {offboarding.length} voltooid
+          <div className="bg-white rounded-xl shadow-sm border border-[var(--neutral-200)] mb-6">
+            <div className="p-6 border-b border-[var(--neutral-200)]">
+              <h2 className="text-lg font-semibold text-[var(--neutral-900)]">{t.offboardingTasks}</h2>
+              <p className="text-sm text-[var(--neutral-600)]">
+                {offboardingCompleted} {t.completed} {offboarding.length}
               </p>
             </div>
-            <div className="p-4">
+            <div className="p-6">
               {offboarding.length === 0 ? (
-                <p className="text-gray-500">Geen offboarding taken.</p>
+                <p className="text-[var(--neutral-500)]">{t.noTasks}</p>
               ) : (
                 <ul className="space-y-3">
                   {offboarding.map((task) => (
@@ -161,10 +202,10 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
                           type="checkbox"
                           checked={task.completed}
                           onChange={(e) => e.target.form?.requestSubmit()}
-                          className="w-5 h-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                          className="w-5 h-5 rounded border-[var(--neutral-300)] text-[var(--warning-600)] focus:ring-[var(--warning-500)]"
                         />
                       </form>
-                      <span className={task.completed ? "text-gray-400 line-through" : "text-gray-700"}>
+                      <span className={task.completed ? "text-[var(--neutral-400)] line-through" : "text-[var(--neutral-700)]"}>
                         {task.taskName}
                       </span>
                     </li>

@@ -1,25 +1,38 @@
+'use client';
+
 import { db } from "@/db";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language";
 
-export const dynamic = "force-dynamic";
+const DEFAULT_ONBOARDING_TASKS = {
+  nl: [
+    "Arbeidscontract ondertekenen",
+    "ID-bewijs kopiëren",
+    "Bankgegevens registreren",
+    "E-mailaccount aanmaken",
+    "Laptop/workstation leveren",
+    "Toegang badges uitgeven",
+    "Interne systemen toegang geven",
+    "Introductiegesprek plannen",
+    "Mentor/ buddy toewijzen",
+    "Vacatieverlof instellen",
+  ],
+  en: [
+    "Sign employment contract",
+    "Copy ID proof",
+    "Register bank details",
+    "Create email account",
+    "Deliver laptop/workstation",
+    "Issue access badges",
+    "Grant access to internal systems",
+    "Schedule introduction meeting",
+    "Assign mentor/buddy",
+    "Set up vacation leave",
+  ],
+};
 
-const DEFAULT_ONBOARDING_TASKS = [
-  "Arbeidscontract ondertekenen",
-  "ID-bewijs kopiëren",
-  "Bankgegevens registreren",
-  "E-mailaccount aanmaken",
-  "Laptop/workstation leveren",
-  "Toegang badges uitgeven",
-  "Interne systemen toegang geven",
-  "Introductiegesprek plannen",
-  "Mentor/ buddy toewijzen",
-  "Vacatieverlof instellen",
-];
-
-async function createEmployee(formData: FormData) {
-  "use server";
-
+function createEmployee(formData: FormData, language: 'nl' | 'en', router: ReturnType<typeof useRouter>) {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const department = formData.get("department") as string;
@@ -35,7 +48,7 @@ async function createEmployee(formData: FormData) {
     status: "onboarding",
   });
 
-  for (const task of DEFAULT_ONBOARDING_TASKS) {
+  for (const task of DEFAULT_ONBOARDING_TASKS[language]) {
     db.addOnboardingTask({
       employeeId,
       taskName: task,
@@ -43,107 +56,115 @@ async function createEmployee(formData: FormData) {
     });
   }
 
-  redirect(`/employees/${employeeId}`);
+  router.push(`/employees/${employeeId}`);
 }
 
 export default function NewEmployeePage() {
+  const { t, language } = useLanguage();
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    createEmployee(formData, language, router);
+  };
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-[var(--neutral-50)]">
+      <header className="bg-white border-b border-[var(--neutral-200)] shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4">
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
-            ← Terug naar overzicht
+          <Link href="/" className="text-[var(--primary-600)] hover:text-[var(--primary-700)] transition-colors">
+            ← {t.backToOverview}
           </Link>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b">
-            <h1 className="text-2xl font-semibold text-gray-900">Nieuwe werknemer toevoegen</h1>
-            <p className="text-gray-600 mt-1">Voer de gegevens in om een nieuwe werknemer te onboarden.</p>
+        <div className="bg-white rounded-xl shadow-sm border border-[var(--neutral-200)]">
+          <div className="p-6 border-b border-[var(--neutral-200)]">
+            <h1 className="text-2xl font-semibold text-[var(--neutral-900)]">{t.addNewEmployee}</h1>
+            <p className="text-[var(--neutral-600)] mt-1">{t.enterDetails}</p>
           </div>
 
-          <form action={createEmployee} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Volledige naam
+              <label htmlFor="name" className="block text-sm font-medium text-[var(--neutral-700)] mb-2">
+                {t.fullName}
               </label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2.5 border border-[var(--neutral-300)] rounded-lg focus:ring-2 focus:ring-[var(--primary-500)] focus:border-[var(--primary-500)] transition-colors"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                E-mailadres
+              <label htmlFor="email" className="block text-sm font-medium text-[var(--neutral-700)] mb-2">
+                {t.email}
               </label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2.5 border border-[var(--neutral-300)] rounded-lg focus:ring-2 focus:ring-[var(--primary-500)] focus:border-[var(--primary-500)] transition-colors"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
-                  Afdeling
+                <label htmlFor="department" className="block text-sm font-medium text-[var(--neutral-700)] mb-2">
+                  {t.department}
                 </label>
                 <input
                   type="text"
                   id="department"
                   name="department"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2.5 border border-[var(--neutral-300)] rounded-lg focus:ring-2 focus:ring-[var(--primary-500)] focus:border-[var(--primary-500)] transition-colors"
                 />
               </div>
 
               <div>
-                <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-1">
-                  Functie
+                <label htmlFor="position" className="block text-sm font-medium text-[var(--neutral-700)] mb-2">
+                  {t.position}
                 </label>
                 <input
                   type="text"
                   id="position"
                   name="position"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2.5 border border-[var(--neutral-300)] rounded-lg focus:ring-2 focus:ring-[var(--primary-500)] focus:border-[var(--primary-500)] transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
-                Startdatum
+              <label htmlFor="startDate" className="block text-sm font-medium text-[var(--neutral-700)] mb-2">
+                {t.startDateLabel}
               </label>
               <input
                 type="date"
                 id="startDate"
                 name="startDate"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2.5 border border-[var(--neutral-300)] rounded-lg focus:ring-2 focus:ring-[var(--primary-500)] focus:border-[var(--primary-500)] transition-colors"
               />
             </div>
 
             <div className="flex gap-4 pt-4">
               <Link
                 href="/"
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-[var(--neutral-300)] text-[var(--neutral-700)] rounded-lg hover:bg-[var(--neutral-50)] transition-colors"
               >
-                Annuleren
+                {t.cancel}
               </Link>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-2 bg-[var(--primary-600)] text-white rounded-lg hover:bg-[var(--primary-700)] transition-colors font-medium"
               >
-                Werknemer toevoegen
+                {t.addEmployee}
               </button>
             </div>
           </form>

@@ -27,7 +27,7 @@ export async function startOffboarding(formData: FormData) {
   const employeeId = parseInt(formData.get("employeeId") as string);
 
   const DEFAULT_OFFBOARDING_TASKS = [
-    "Exit gesprek plannen",
+    "Exit interview plannen",
     "Bedrijfseigendom innemen",
     "E-mailaccount deactiveren",
     "Toegangsrechten intrekken",
