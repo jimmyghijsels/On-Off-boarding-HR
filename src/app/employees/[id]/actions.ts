@@ -1,11 +1,12 @@
 "use server";
 
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { employees, onboardingTasks, offboardingTasks } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function updateTask(formData: FormData) {
+  const db = getDb();
   const taskId = parseInt(formData.get("taskId") as string);
   const taskType = formData.get("taskType") as string;
   
@@ -27,6 +28,7 @@ export async function updateTask(formData: FormData) {
 }
 
 export async function startOffboarding(formData: FormData) {
+  const db = getDb();
   const employeeId = parseInt(formData.get("employeeId") as string);
   
   const DEFAULT_OFFBOARDING_TASKS = [
@@ -57,6 +59,7 @@ export async function startOffboarding(formData: FormData) {
 }
 
 export async function completeOnboarding(formData: FormData) {
+  const db = getDb();
   const employeeId = parseInt(formData.get("employeeId") as string);
   
   await db.update(employees)

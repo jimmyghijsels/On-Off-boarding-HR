@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { employees, onboardingTasks, offboardingTasks } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
@@ -8,16 +8,19 @@ import { updateTask, startOffboarding, completeOnboarding } from "./actions";
 export const dynamic = "force-dynamic";
 
 async function getEmployee(id: number) {
+  const db = getDb();
   const employee = await db.select().from(employees).where(eq(employees.id, id)).limit(1);
   if (employee.length === 0) return null;
   return employee[0];
 }
 
 async function getOnboardingTasks(employeeId: number) {
+  const db = getDb();
   return await db.select().from(onboardingTasks).where(eq(onboardingTasks.employeeId, employeeId));
 }
 
 async function getOffboardingTasks(employeeId: number) {
+  const db = getDb();
   return await db.select().from(offboardingTasks).where(eq(offboardingTasks.employeeId, employeeId));
 }
 

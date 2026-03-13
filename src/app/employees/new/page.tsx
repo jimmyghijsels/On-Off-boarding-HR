@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { employees, onboardingTasks } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
@@ -22,6 +22,7 @@ const DEFAULT_ONBOARDING_TASKS = [
 async function createEmployee(formData: FormData) {
   "use server";
   
+  const db = getDb();
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const department = formData.get("department") as string;

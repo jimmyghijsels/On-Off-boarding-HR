@@ -1,4 +1,7 @@
 import { runMigrations } from "@kilocode/app-builder-db";
-import { db } from "./index";
+import { createDatabase } from "@kilocode/app-builder-db";
+import * as schema from "./schema";
 
-await runMigrations(db, {}, { migrationsFolder: "./src/db/migrations" });
+const db = createDatabase(schema);
+
+runMigrations(db, {}, { migrationsFolder: "./src/db/migrations" }).catch(console.error);

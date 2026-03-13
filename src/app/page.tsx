@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { employees } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
@@ -6,6 +6,7 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 async function getEmployees() {
+  const db = getDb();
   return await db.select().from(employees).orderBy(desc(employees.createdAt));
 }
 
