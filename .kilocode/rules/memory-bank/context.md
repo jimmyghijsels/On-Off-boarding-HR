@@ -12,12 +12,13 @@ The app is a fully functional HR tool for managing employee onboarding and offbo
 - [x] TypeScript configuration with strict mode
 - [x] Tailwind CSS 4 integration
 - [x] ESLint configuration
-- [x] Database setup with Drizzle ORM + SQLite
+- [x] Database setup with simple in-memory database (development)
 - [x] Employee schema (employees, onboarding_tasks, offboarding_tasks)
 - [x] Dashboard page with employee overview
 - [x] New employee form with auto-created onboarding tasks
 - [x] Employee detail page with task management
 - [x] Onboarding/offboarding workflow
+- [x] Build and deployment fixes
 
 ## Current Structure
 
